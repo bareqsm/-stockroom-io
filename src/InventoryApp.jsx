@@ -1,54 +1,50 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Package,
   Plus,
   Search,
   Edit3,
   Trash2,
-  Download,
   Upload,
-  AlertTriangle,
-  Clock,
-  DollarSign,
-  TrendingDown,
+  FileSpreadsheet,
+  LayoutDashboard,
+  ShoppingBag,
   Boxes,
   Moon,
   Sun,
   X,
-  Filter,
-  FileSpreadsheet,
-  LayoutDashboard,
-  ShoppingBag,
+  AlertTriangle,
   Check,
-  Info,
+  DollarSign,
+  Clock,
+  TrendingDown,
 } from "lucide-react";
 
-// ---------- Helpers ----------
-const daysUntil = (dateStr) => {
-  if (!dateStr) return Infinity;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const d = new Date(dateStr);
-  d.setHours(0, 0, 0, 0);
-  return Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-};
+const STORAGE_KEY = "inventory:products:v2";
+const THEME_KEY = "inventory:theme:v2";
+
+const uid = () =>
+  Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 const fmtMoney = (n) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: 2,
   }).format(Number(n) || 0);
 
 const fmtNum = (n) => new Intl.NumberFormat("en-US").format(Number(n) || 0);
 
-const uid = () =>
-  Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const daysUntil = (dateStr) => {
+  if (!dateStr) return Infinity;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-const STORAGE_KEY = "inventory:products:v1";
-const THEME_KEY = "inventory:theme:v1";
+  const date = new Date(dateStr);
+  date.setHours(0, 0, 0, 0);
 
-// ---------- Seed Data ----------
+  return Math.ceil((date - today) / (1000 * 60 * 60 * 24));
+};
+
 const seedProducts = [
   {
     id: uid(),
@@ -57,9 +53,11 @@ const seedProducts = [
     category: "Dairy",
     quantity: 48,
     unitCost: 2.85,
-    expirationDate: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
+    expirationDate: new Date(Date.now() + 5 * 86400000)
+      .toISOString()
+      .slice(0, 10),
     supplier: "Valley Farms Co.",
-    notes: "Keep refrigerated below 4°C",
+    notes: "Keep refrigerated",
   },
   {
     id: uid(),
@@ -68,7 +66,9 @@ const seedProducts = [
     category: "Bakery",
     quantity: 12,
     unitCost: 4.5,
-    expirationDate: new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10),
+    expirationDate: new Date(Date.now() + 2 * 86400000)
+      .toISOString()
+      .slice(0, 10),
     supplier: "Stone Oven Bakery",
     notes: "Daily delivery",
   },
@@ -79,51 +79,19 @@ const seedProducts = [
     category: "Beverages",
     quantity: 6,
     unitCost: 12.75,
-    expirationDate: new Date(Date.now() + 180 * 86400000).toISOString().slice(0, 10),
+    expirationDate: new Date(Date.now() + 180 * 86400000)
+      .toISOString()
+      .slice(0, 10),
     supplier: "Highland Roasters",
-    notes: "Low stock — reorder soon",
-  },
-  {
-    id: uid(),
-    name: "Extra Virgin Olive Oil 500ml",
-    sku: "PNT-077",
-    category: "Pantry",
-    quantity: 34,
-    unitCost: 8.9,
-    expirationDate: new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
-    supplier: "Mediterranean Imports",
-    notes: "",
-  },
-  {
-    id: uid(),
-    name: "Greek Yogurt 500g",
-    sku: "DRY-042",
-    category: "Dairy",
-    quantity: 4,
-    unitCost: 3.4,
-    expirationDate: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10),
-    supplier: "Valley Farms Co.",
-    notes: "Expired — remove from shelf",
-  },
-  {
-    id: uid(),
-    name: "Aged Cheddar Wheel",
-    sku: "DRY-091",
-    category: "Dairy",
-    quantity: 9,
-    unitCost: 18.2,
-    expirationDate: new Date(Date.now() + 45 * 86400000).toISOString().slice(0, 10),
-    supplier: "Copper Creek Dairy",
-    notes: "",
+    notes: "Low stock",
   },
 ];
 
-// ---------- Main Component ----------
 export default function InventoryApp() {
   const [products, setProducts] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [dark, setDark] = useState(false);
-  const [view, setView] = useState("dashboard");
+  const [view, setView] = useState("products");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -132,162 +100,213 @@ export default function InventoryApp() {
   const [toast, setToast] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // ---------- Load from localStorage ----------
   useEffect(() => {
     try {
       const savedProducts = localStorage.getItem(STORAGE_KEY);
-
       if (savedProducts) {
         setProducts(JSON.parse(savedProducts));
       } else {
         setProducts(seedProducts);
       }
-    } catch (error) {
-      console.error("Failed to load products:", error);
+    } catch {
       setProducts(seedProducts);
     }
 
     try {
       const savedTheme = localStorage.getItem(THEME_KEY);
-      if (savedTheme === "dark") {
-        setDark(true);
-      }
-    } catch (error) {
-      console.error("Failed to load theme:", error);
-    }
+      if (savedTheme === "dark") setDark(true);
+    } catch {}
 
     setLoaded(true);
   }, []);
 
-  // ---------- Persist products ----------
   useEffect(() => {
     if (!loaded) return;
-
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    } catch (error) {
-      console.error("Failed to save products:", error);
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
   }, [products, loaded]);
 
-  // ---------- Persist theme ----------
   useEffect(() => {
     if (!loaded) return;
-
-    try {
-      localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
-    } catch (error) {
-      console.error("Failed to save theme:", error);
-    }
+    localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
   }, [dark, loaded]);
 
-  // ---------- Toast ----------
   const flash = (msg, kind = "success") => {
     setToast({ msg, kind });
-    setTimeout(() => setToast(null), 2600);
+    setTimeout(() => setToast(null), 2500);
   };
 
-  // ---------- Derived ----------
-  const categories = useMemo(() => {
-    const set = new Set(products.map((p) => p.category).filter(Boolean));
-    return Array.from(set).sort();
-  }, [products]);
+  const getStatus = (product) => {
+    const days = daysUntil(product.expirationDate);
 
-  const getStatus = (p) => {
-    const d = daysUntil(p.expirationDate);
-    if (p.expirationDate && d < 0) return "expired";
-    if (p.expirationDate && d <= 7) return "expiring";
-    if (Number(p.quantity) <= 10) return "low";
+    if (product.expirationDate && days < 0) return "expired";
+    if (product.expirationDate && days <= 7) return "expiring";
+    if (Number(product.quantity) <= 10) return "low";
+
     return "ok";
   };
 
+  const categories = useMemo(() => {
+    return Array.from(
+      new Set(products.map((p) => p.category).filter(Boolean))
+    ).sort();
+  }, [products]);
+
   const stats = useMemo(() => {
     const totalValue = products.reduce(
-      (s, p) => s + Number(p.quantity || 0) * Number(p.unitCost || 0),
+      (sum, p) => sum + Number(p.quantity || 0) * Number(p.unitCost || 0),
       0
     );
+
     const totalUnits = products.reduce(
-      (s, p) => s + Number(p.quantity || 0),
+      (sum, p) => sum + Number(p.quantity || 0),
       0
     );
-    const expired = products.filter((p) => getStatus(p) === "expired").length;
-    const expiring = products.filter((p) => getStatus(p) === "expiring").length;
-    const low = products.filter(
-      (p) => getStatus(p) === "low" || getStatus(p) === "expiring"
-    ).length;
-    const lowOnly = products.filter((p) => Number(p.quantity || 0) <= 10).length;
+
     return {
       totalProducts: products.length,
-      totalValue,
       totalUnits,
-      expired,
-      expiring,
-      low,
-      lowOnly,
+      totalValue,
+      expired: products.filter((p) => getStatus(p) === "expired").length,
+      expiring: products.filter((p) => getStatus(p) === "expiring").length,
+      low: products.filter((p) => Number(p.quantity || 0) <= 10).length,
     };
   }, [products]);
 
-  const filtered = useMemo(() => {
+  const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
+
     return products.filter((p) => {
-      if (q) {
-        const hay =
-          `${p.name} ${p.sku} ${p.category} ${p.supplier} ${p.notes}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      if (categoryFilter !== "all" && p.category !== categoryFilter)
-        return false;
+      const text = `${p.name} ${p.sku} ${p.category} ${p.supplier} ${p.notes}`.toLowerCase();
+
+      if (q && !text.includes(q)) return false;
+      if (categoryFilter !== "all" && p.category !== categoryFilter) return false;
+
       if (statusFilter !== "all") {
-        const s = getStatus(p);
-        if (statusFilter === "low" && s !== "low" && s !== "expiring")
-          return false;
-        if (statusFilter === "expired" && s !== "expired") return false;
-        if (statusFilter === "expiring" && s !== "expiring") return false;
-        if (statusFilter === "ok" && s !== "ok") return false;
+        const status = getStatus(p);
+        if (statusFilter === "low" && !(status === "low" || status === "expiring")) return false;
+        if (statusFilter === "expired" && status !== "expired") return false;
+        if (statusFilter === "expiring" && status !== "expiring") return false;
+        if (statusFilter === "ok" && status !== "ok") return false;
       }
+
       return true;
     });
   }, [products, search, categoryFilter, statusFilter]);
 
-  // ---------- CRUD ----------
   const openAdd = () => {
     setEditing(null);
     setModalOpen(true);
   };
-  const openEdit = (p) => {
-    setEditing(p);
+
+  const openEdit = (product) => {
+    setEditing(product);
     setModalOpen(true);
   };
-  const handleSave = (data) => {
+
+  const saveProduct = (data) => {
     if (editing) {
-      setProducts((ps) => ps.map((p) => (p.id === editing.id ? { ...p, ...data } : p)));
+      setProducts((items) =>
+        items.map((p) => (p.id === editing.id ? { ...p, ...data } : p))
+      );
       flash("Product updated");
     } else {
-      setProducts((ps) => [{ id: uid(), ...data }, ...ps]);
+      setProducts((items) => [{ id: uid(), ...data }, ...items]);
       flash("Product added");
     }
+
     setModalOpen(false);
     setEditing(null);
   };
-  const handleDelete = (id) => {
-    setProducts((ps) => ps.filter((p) => p.id !== id));
+
+  const deleteProduct = (id) => {
+    setProducts((items) => items.filter((p) => p.id !== id));
     setConfirmDelete(null);
     flash("Product deleted", "danger");
   };
-  const adjustQty = (id, delta) => {
-    setProducts((ps) =>
-      ps.map((p) =>
+
+  const adjustQty = (id, amount) => {
+    setProducts((items) =>
+      items.map((p) =>
         p.id === id
-          ? { ...p, quantity: Math.max(0, Number(p.quantity || 0) + delta) }
+          ? {
+              ...p,
+              quantity: Math.max(0, Number(p.quantity || 0) + Number(amount || 0)),
+            }
           : p
       )
     );
   };
 
-  // ---------- Excel Export ----------
+  const setExactQty = (id, qty) => {
+    setProducts((items) =>
+      items.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              quantity: Math.max(0, Number(qty || 0)),
+            }
+          : p
+      )
+    );
+  };
+
+  const importExcel = async (file) => {
+    try {
+      const XLSX = await import("xlsx");
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet);
+
+      const imported = rows
+        .filter((row) => row.Name || row.name || row.Product || row.product)
+        .map((row) => ({
+          id: uid(),
+          name: row.Name || row.name || row.Product || row.product || "",
+          sku:
+            row["SKU / Barcode"] ||
+            row.SKU ||
+            row.sku ||
+            row.Barcode ||
+            row.barcode ||
+            "",
+          category: row.Category || row.category || "Uncategorized",
+          quantity: Number(row.Quantity || row.quantity || row.Qty || row.qty || 0),
+          unitCost: Number(
+            row["Unit Cost"] ||
+              row.unitCost ||
+              row["Unit cost"] ||
+              row.Cost ||
+              row.cost ||
+              0
+          ),
+          expirationDate:
+            row["Expiration Date"] ||
+            row.expirationDate ||
+            row.Expires ||
+            row.expires ||
+            "",
+          supplier: row.Supplier || row.supplier || "",
+          notes: row.Notes || row.notes || "",
+        }));
+
+      if (!imported.length) {
+        flash("No valid products found", "danger");
+        return;
+      }
+
+      setProducts((items) => [...imported, ...items]);
+      flash(`Imported ${imported.length} products`);
+    } catch (error) {
+      console.error(error);
+      flash("Import failed", "danger");
+    }
+  };
+
   const exportExcel = async () => {
     try {
       const XLSX = await import("xlsx");
+
       const rows = products.map((p) => ({
         Name: p.name,
         "SKU / Barcode": p.sku,
@@ -301,6 +320,7 @@ export default function InventoryApp() {
         Supplier: p.supplier || "",
         Notes: p.notes || "",
       }));
+
       rows.push({});
       rows.push({
         Name: "TOTALS",
@@ -308,207 +328,150 @@ export default function InventoryApp() {
         "Total Cost": stats.totalValue,
       });
 
-      const ws = XLSX.utils.json_to_sheet(rows);
-      ws["!cols"] = [
-        { wch: 32 }, { wch: 16 }, { wch: 14 }, { wch: 10 },
-        { wch: 12 }, { wch: 14 }, { wch: 16 }, { wch: 18 },
-        { wch: 12 }, { wch: 22 }, { wch: 30 },
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      worksheet["!cols"] = [
+        { wch: 32 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 14 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 22 },
+        { wch: 35 },
       ];
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Inventory");
 
-      const meta = [
+      const summary = [
         ["Store Inventory Report"],
-        ["Generated by", "Bareq Mohaisen — Inventory Manager"],
-        ["Date", new Date().toLocaleString()],
+        ["Generated", new Date().toLocaleString()],
         [],
         ["Total Products", stats.totalProducts],
-        ["Total Units in Stock", stats.totalUnits],
+        ["Total Units", stats.totalUnits],
         ["Total Inventory Value", stats.totalValue],
         ["Expired Items", stats.expired],
-        ["Expiring Soon (≤7 days)", stats.expiring],
-        ["Low Stock Items (≤10)", stats.lowOnly],
+        ["Expiring Soon", stats.expiring],
+        ["Low Stock Items", stats.low],
       ];
-      const wsMeta = XLSX.utils.aoa_to_sheet(meta);
-      wsMeta["!cols"] = [{ wch: 28 }, { wch: 40 }];
-      XLSX.utils.book_append_sheet(wb, wsMeta, "Summary");
 
-      XLSX.writeFile(wb, `inventory-${new Date().toISOString().slice(0, 10)}.xlsx`);
-      flash("Exported to Excel");
-    } catch (e) {
+      const summarySheet = XLSX.utils.aoa_to_sheet(summary);
+      summarySheet["!cols"] = [{ wch: 28 }, { wch: 35 }];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
+      XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+
+      XLSX.writeFile(
+        workbook,
+        `inventory-${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+
+      flash("Exported Excel file");
+    } catch (error) {
+      console.error(error);
       flash("Export failed", "danger");
     }
   };
 
-  // ---------- Excel Import ----------
-  const importExcel = async (file) => {
-    try {
-      const XLSX = await import("xlsx");
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws);
-      const imported = rows
-        .filter((r) => r.Name || r.name)
-        .map((r) => ({
-          id: uid(),
-          name: r.Name || r.name || "",
-          sku: r["SKU / Barcode"] || r.SKU || r.sku || "",
-          category: r.Category || r.category || "Uncategorized",
-          quantity: Number(r.Quantity || r.quantity || 0),
-          unitCost: Number(r["Unit Cost"] || r.unitCost || 0),
-          expirationDate: r["Expiration Date"] || r.expirationDate || "",
-          supplier: r.Supplier || r.supplier || "",
-          notes: r.Notes || r.notes || "",
-        }));
-      if (!imported.length) {
-        flash("No valid rows found", "danger");
-        return;
-      }
-      setProducts((ps) => [...imported, ...ps]);
-      flash(`Imported ${imported.length} products`);
-    } catch {
-      flash("Import failed", "danger");
-    }
-  };
-
-  // ---------- Styles ----------
   const C = dark
     ? {
-        bg: "bg-stone-950",
-        panel: "bg-stone-900",
-        panel2: "bg-stone-900/60",
-        border: "border-stone-800",
-        text: "text-stone-100",
-        dim: "text-stone-400",
-        dim2: "text-stone-500",
+        bg: "bg-slate-950",
+        panel: "bg-slate-900",
+        panel2: "bg-slate-900/70",
+        border: "border-slate-800",
+        text: "text-slate-100",
+        dim: "text-slate-400",
+        dim2: "text-slate-500",
         input:
-          "bg-stone-950 border-stone-800 text-stone-100 placeholder:text-stone-600",
-        hover: "hover:bg-stone-800/60",
-        subtle: "bg-stone-800/40",
+          "bg-slate-950 border-slate-700 text-slate-100 placeholder:text-slate-500",
+        hover: "hover:bg-slate-800",
+        primary: "bg-blue-500 text-white hover:bg-blue-400",
       }
     : {
-        bg: "bg-stone-50",
+        bg: "bg-slate-50",
         panel: "bg-white",
         panel2: "bg-white",
-        border: "border-stone-200",
-        text: "text-stone-900",
-        dim: "text-stone-600",
-        dim2: "text-stone-500",
+        border: "border-slate-200",
+        text: "text-slate-900",
+        dim: "text-slate-600",
+        dim2: "text-slate-500",
         input:
-          "bg-white border-stone-300 text-stone-900 placeholder:text-stone-400",
-        hover: "hover:bg-stone-100",
-        subtle: "bg-stone-100",
+          "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400",
+        hover: "hover:bg-slate-100",
+        primary: "bg-blue-700 text-white hover:bg-blue-800",
       };
 
   if (!loaded) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${C.bg} ${C.text}`}>
-        <div className="animate-pulse text-sm tracking-wider uppercase">
-          Loading inventory…
-        </div>
+        Loading inventory...
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen ${C.bg} ${C.text} font-sans`}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-        .font-display { font-family: 'Fraunces', ui-serif, Georgia, serif; font-feature-settings: 'ss01'; }
-        .font-sans { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
-        .tabular { font-variant-numeric: tabular-nums; }
-      `}</style>
-
-      {/* Header */}
-      <header className={`border-b ${C.border} sticky top-0 z-30 backdrop-blur ${dark ? "bg-stone-950/80" : "bg-stone-50/80"}`}>
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center gap-6">
+    <div className={`min-h-screen ${C.bg} ${C.text}`}>
+      <header className={`${C.panel2} border-b ${C.border} sticky top-0 z-30`}>
+        <div className="max-w-7xl mx-auto px-5 py-4 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-lg ${dark ? "bg-amber-500" : "bg-stone-900"} flex items-center justify-center`}>
-              <Boxes className={dark ? "text-stone-950" : "text-amber-400"} size={20} strokeWidth={2.2} />
+            <div className="w-11 h-11 rounded-xl bg-blue-800 text-white flex items-center justify-center">
+              <Boxes size={22} />
             </div>
             <div>
-              <div className="font-display text-xl leading-none tracking-tight">
-                Stockroom<span className="italic font-light"> / io</span>
+              <div className="text-2xl font-extrabold tracking-tight">
+                Stockroom <span className="text-blue-700">/ io</span>
               </div>
-              <div className={`text-[10px] uppercase tracking-[0.18em] ${C.dim2} mt-1`}>
-                Inventory Manager
-              </div>
+              <div className={`text-sm ${C.dim}`}>Inventory Manager</div>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-1 ml-4">
-            <NavBtn
-              active={view === "dashboard"}
-              onClick={() => setView("dashboard")}
-              icon={<LayoutDashboard size={15} />}
-              dark={dark}
-            >
-              Dashboard
-            </NavBtn>
-            <NavBtn
-              active={view === "products"}
-              onClick={() => setView("products")}
-              icon={<ShoppingBag size={15} />}
-              dark={dark}
-            >
-              Products
-            </NavBtn>
-          </nav>
-
           <div className="flex-1" />
 
-          <button
-            onClick={() => setDark((d) => !d)}
-            className={`p-2 rounded-lg ${C.hover} ${C.dim}`}
-            aria-label="Toggle theme"
-          >
-            {dark ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
+          <nav className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setView("dashboard")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold ${
+                view === "dashboard" ? C.primary : `${C.panel} ${C.text} border ${C.border}`
+              }`}
+            >
+              <LayoutDashboard size={17} />
+              Dashboard
+            </button>
 
-          <button
-            onClick={openAdd}
-            className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
-              dark ? "bg-amber-500 text-stone-950 hover:bg-amber-400" : "bg-stone-900 text-white hover:bg-stone-800"
-            } transition`}
-          >
-            <Plus size={15} strokeWidth={2.5} />
-            New Product
-          </button>
-        </div>
+            <button
+              onClick={() => setView("products")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold ${
+                view === "products" ? C.primary : `${C.panel} ${C.text} border ${C.border}`
+              }`}
+            >
+              <ShoppingBag size={17} />
+              Products
+            </button>
 
-        {/* Mobile nav */}
-        <div className="md:hidden flex gap-1 px-5 pb-3">
-          <NavBtn active={view === "dashboard"} onClick={() => setView("dashboard")} icon={<LayoutDashboard size={14} />} dark={dark}>
-            Dashboard
-          </NavBtn>
-          <NavBtn active={view === "products"} onClick={() => setView("products")} icon={<ShoppingBag size={14} />} dark={dark}>
-            Products
-          </NavBtn>
+            <button
+              onClick={() => setDark((v) => !v)}
+              className={`${C.panel} border ${C.border} px-4 py-2 rounded-xl`}
+            >
+              {dark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </nav>
         </div>
       </header>
 
-      {/* Main */}
-      <main className="max-w-7xl mx-auto px-5 sm:px-8 py-8 pb-24">
-        {view === "dashboard" && (
-          <DashboardView
+      <main className="max-w-7xl mx-auto px-5 py-8">
+        {view === "dashboard" ? (
+          <Dashboard
             stats={stats}
             products={products}
             getStatus={getStatus}
+            setView={setView}
+            setStatusFilter={setStatusFilter}
             C={C}
-            dark={dark}
-            onView={() => setView("products")}
-            onFilterStatus={(s) => {
-              setStatusFilter(s);
-              setView("products");
-            }}
           />
-        )}
-
-        {view === "products" && (
-          <ProductsView
-            products={filtered}
+        ) : (
+          <Products
+            products={filteredProducts}
             allProducts={products}
             categories={categories}
             search={search}
@@ -517,71 +480,50 @@ export default function InventoryApp() {
             setCategoryFilter={setCategoryFilter}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
-            onAdd={openAdd}
-            onEdit={openEdit}
-            onDelete={(p) => setConfirmDelete(p)}
-            onAdjustQty={adjustQty}
-            onExport={exportExcel}
-            onImport={importExcel}
+            importExcel={importExcel}
+            exportExcel={exportExcel}
+            openAdd={openAdd}
+            openEdit={openEdit}
+            setConfirmDelete={setConfirmDelete}
+            adjustQty={adjustQty}
+            setExactQty={setExactQty}
             getStatus={getStatus}
             C={C}
-            dark={dark}
           />
         )}
       </main>
 
-      {/* Footer */}
-      <footer className={`border-t ${C.border} ${C.panel2}`}>
-        <div className={`max-w-7xl mx-auto px-5 sm:px-8 py-5 flex flex-wrap items-center justify-between gap-3 text-xs ${C.dim}`}>
-          <div className="flex items-center gap-2">
-            <span className={`${C.dim2} font-mono`}>v1.0</span>
-            <span>·</span>
-            <span>Built by <span className={`${C.text} font-medium`}>Bareq Mohaisen</span></span>
-          </div>
-          <div className="font-mono text-[11px] tracking-wider uppercase">
-            {stats.totalProducts} SKUs · {fmtMoney(stats.totalValue)} on hand
-          </div>
-        </div>
-      </footer>
-
-      {/* Modal */}
       {modalOpen && (
         <ProductModal
           initial={editing}
+          categories={categories}
           onClose={() => {
             setModalOpen(false);
             setEditing(null);
           }}
-          onSave={handleSave}
-          categories={categories}
+          onSave={saveProduct}
           C={C}
-          dark={dark}
         />
       )}
 
-      {/* Delete confirm */}
       {confirmDelete && (
         <ConfirmDialog
           product={confirmDelete}
           onCancel={() => setConfirmDelete(null)}
-          onConfirm={() => handleDelete(confirmDelete.id)}
+          onConfirm={() => deleteProduct(confirmDelete.id)}
           C={C}
-          dark={dark}
         />
       )}
 
-      {/* Toast */}
       {toast && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-medium shadow-lg z-50 flex items-center gap-2 ${
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold ${
             toast.kind === "danger"
               ? "bg-red-600 text-white"
-              : dark
-              ? "bg-amber-500 text-stone-950"
-              : "bg-stone-900 text-white"
+              : "bg-slate-900 text-white"
           }`}
         >
-          {toast.kind === "danger" ? <AlertTriangle size={15} /> : <Check size={15} />}
+          {toast.kind === "danger" ? <AlertTriangle size={17} /> : <Check size={17} />}
           {toast.msg}
         </div>
       )}
@@ -589,252 +531,118 @@ export default function InventoryApp() {
   );
 }
 
-// ---------- Nav button ----------
-function NavBtn({ active, onClick, icon, children, dark }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition ${
-        active
-          ? dark
-            ? "bg-stone-800 text-stone-100"
-            : "bg-stone-900 text-white"
-          : dark
-          ? "text-stone-400 hover:text-stone-200 hover:bg-stone-900"
-          : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
-      }`}
-    >
-      {icon}
-      {children}
-    </button>
-  );
-}
+function Dashboard({ stats, products, getStatus, setView, setStatusFilter, C }) {
+  const alertProducts = products
+    .filter((p) => ["expired", "expiring", "low"].includes(getStatus(p)))
+    .slice(0, 8);
 
-// ---------- Dashboard ----------
-function DashboardView({ stats, products, getStatus, C, dark, onView, onFilterStatus }) {
-  const alerts = products
-    .filter((p) => {
-      const s = getStatus(p);
-      return s === "expired" || s === "expiring" || s === "low";
-    })
-    .slice(0, 6);
-
-  const topValue = [...products]
-    .sort(
-      (a, b) =>
-        Number(b.quantity || 0) * Number(b.unitCost || 0) -
-        Number(a.quantity || 0) * Number(a.unitCost || 0)
-    )
-    .slice(0, 5);
+  const openFilter = (filter) => {
+    setStatusFilter(filter);
+    setView("products");
+  };
 
   return (
     <div className="space-y-8">
-      {/* Hero */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-2">
-        <div>
-          <div className={`text-[11px] uppercase tracking-[0.2em] ${C.dim2} mb-2`}>
-            Store Overview
-          </div>
-          <h1 className="font-display text-4xl md:text-5xl tracking-tight leading-none">
-            Today's <span className="italic font-light">snapshot</span>
-          </h1>
-          <p className={`mt-3 text-sm ${C.dim} max-w-lg`}>
-            {new Date().toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </p>
+      <div>
+        <div className={`text-sm font-bold uppercase tracking-widest ${C.dim2}`}>
+          Store Overview
         </div>
+        <h1 className="text-5xl font-extrabold mt-2">Dashboard</h1>
       </div>
 
-      {/* Primary stat */}
-      <div className={`${C.panel} ${C.border} border rounded-2xl p-6 md:p-8 relative overflow-hidden`}>
-        <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-20 ${dark ? "bg-amber-500" : "bg-amber-200"}`} />
-        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
-          <div className="md:col-span-1">
-            <div className={`text-[11px] uppercase tracking-[0.18em] ${C.dim2} mb-3`}>
-              Total Inventory Value
-            </div>
-            <div className="font-display text-5xl md:text-6xl tracking-tight tabular">
-              {fmtMoney(stats.totalValue)}
-            </div>
-            <div className={`mt-3 text-sm ${C.dim} tabular`}>
-              across {fmtNum(stats.totalUnits)} units in stock
-            </div>
-          </div>
-          <div className="md:col-span-2 grid grid-cols-3 gap-4 md:gap-6">
-            <InlineMetric label="Products" value={stats.totalProducts} C={C} />
-            <InlineMetric label="Units" value={fmtNum(stats.totalUnits)} C={C} />
-            <InlineMetric label="Avg / SKU" value={stats.totalProducts ? fmtMoney(stats.totalValue / stats.totalProducts) : "—"} C={C} />
-          </div>
+      <section className={`${C.panel} border ${C.border} rounded-3xl p-8 shadow-sm`}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Metric title="Inventory Value" value={fmtMoney(stats.totalValue)} icon={<DollarSign />} />
+          <Metric title="Products" value={fmtNum(stats.totalProducts)} icon={<Package />} />
+          <Metric title="Units" value={fmtNum(stats.totalUnits)} icon={<Boxes />} />
+          <Metric title="Low Stock" value={fmtNum(stats.low)} icon={<TrendingDown />} />
         </div>
-      </div>
+      </section>
 
-      {/* Alert cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <AlertCard
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <AlertBox
           title="Expired"
           count={stats.expired}
-          icon={<AlertTriangle size={18} />}
-          accent="red"
-          dark={dark}
-          onClick={() => onFilterStatus("expired")}
+          color="red"
+          icon={<AlertTriangle />}
+          onClick={() => openFilter("expired")}
         />
-        <AlertCard
+        <AlertBox
           title="Expiring Soon"
-          subtitle="within 7 days"
           count={stats.expiring}
-          icon={<Clock size={18} />}
-          accent="amber"
-          dark={dark}
-          onClick={() => onFilterStatus("expiring")}
+          color="amber"
+          icon={<Clock />}
+          onClick={() => openFilter("expiring")}
         />
-        <AlertCard
+        <AlertBox
           title="Low Stock"
-          subtitle="10 units or less"
-          count={stats.lowOnly}
-          icon={<TrendingDown size={18} />}
-          accent="blue"
-          dark={dark}
-          onClick={() => onFilterStatus("low")}
+          count={stats.low}
+          color="blue"
+          icon={<TrendingDown />}
+          onClick={() => openFilter("low")}
         />
-      </div>
+      </section>
 
-      {/* Two columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Alerts */}
-        <div className={`lg:col-span-3 ${C.panel} ${C.border} border rounded-2xl overflow-hidden`}>
-          <div className={`flex items-center justify-between px-6 py-4 border-b ${C.border}`}>
-            <div>
-              <div className="font-display text-lg tracking-tight">Attention required</div>
-              <div className={`text-xs ${C.dim} mt-0.5`}>Items flagged for review</div>
-            </div>
-            <button onClick={onView} className={`text-xs ${C.dim} hover:underline`}>
-              See all →
-            </button>
-          </div>
-          <div className="divide-y divide-stone-200/10">
-            {alerts.length === 0 ? (
-              <div className={`px-6 py-10 text-center ${C.dim} text-sm`}>
-                <Check size={28} className="mx-auto mb-3 opacity-60" />
-                Everything looks good. No alerts right now.
+      <section className={`${C.panel} border ${C.border} rounded-3xl overflow-hidden shadow-sm`}>
+        <div className={`px-6 py-4 border-b ${C.border}`}>
+          <h2 className="text-2xl font-extrabold">Attention Required</h2>
+          <p className={`text-sm ${C.dim}`}>Products that need review</p>
+        </div>
+
+        {alertProducts.length === 0 ? (
+          <div className={`p-10 text-center ${C.dim}`}>No alerts right now.</div>
+        ) : (
+          <div className="divide-y divide-slate-200">
+            {alertProducts.map((p) => (
+              <div key={p.id} className="px-6 py-4 flex justify-between gap-4">
+                <div>
+                  <div className="font-bold">{p.name}</div>
+                  <div className={`text-sm ${C.dim}`}>
+                    {p.sku} · {p.category}
+                  </div>
+                </div>
+                <StatusPill status={getStatus(p)} />
               </div>
-            ) : (
-              alerts.map((p) => {
-                const s = getStatus(p);
-                const d = daysUntil(p.expirationDate);
-                return (
-                  <div
-                    key={p.id}
-                    className={`px-6 py-3.5 flex items-center gap-4 ${C.hover} transition`}
-                  >
-                    <StatusDot status={s} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">{p.name}</div>
-                      <div className={`text-xs ${C.dim2} font-mono mt-0.5`}>
-                        {p.sku} · {p.category}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium tabular">
-                        {s === "expired"
-                          ? `${Math.abs(d)}d overdue`
-                          : s === "expiring"
-                          ? `${d}d left`
-                          : `${p.quantity} units`}
-                      </div>
-                      <div className={`text-xs ${C.dim2} tabular`}>
-                        {fmtMoney(p.quantity * p.unitCost)}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+            ))}
           </div>
-        </div>
-
-        {/* Top value */}
-        <div className={`lg:col-span-2 ${C.panel} ${C.border} border rounded-2xl overflow-hidden`}>
-          <div className={`px-6 py-4 border-b ${C.border}`}>
-            <div className="font-display text-lg tracking-tight">Top value</div>
-            <div className={`text-xs ${C.dim} mt-0.5`}>By on-hand worth</div>
-          </div>
-          <div className="px-6 py-4 space-y-3">
-            {topValue.length === 0 ? (
-              <div className={`py-6 text-center text-sm ${C.dim}`}>No products yet</div>
-            ) : (
-              topValue.map((p, i) => {
-                const val = p.quantity * p.unitCost;
-                const max = topValue[0].quantity * topValue[0].unitCost || 1;
-                const pct = (val / max) * 100;
-                return (
-                  <div key={p.id}>
-                    <div className="flex items-center justify-between text-sm mb-1.5">
-                      <span className="truncate flex items-center gap-2">
-                        <span className={`font-mono text-xs ${C.dim2}`}>
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <span className="truncate">{p.name}</span>
-                      </span>
-                      <span className="tabular font-medium">{fmtMoney(val)}</span>
-                    </div>
-                    <div className={`h-1.5 rounded-full ${C.subtle} overflow-hidden`}>
-                      <div
-                        className={`h-full rounded-full ${dark ? "bg-amber-500" : "bg-stone-900"}`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function InlineMetric({ label, value, C }) {
+function Metric({ title, value, icon }) {
   return (
-    <div>
-      <div className={`text-[10px] uppercase tracking-[0.18em] ${C.dim2} mb-2`}>{label}</div>
-      <div className="font-display text-2xl md:text-3xl tracking-tight tabular">{value}</div>
+    <div className="rounded-2xl border border-slate-200 p-5 bg-white">
+      <div className="text-blue-700 mb-4">{React.cloneElement(icon, { size: 26 })}</div>
+      <div className="text-sm text-slate-500 font-bold uppercase tracking-wider">{title}</div>
+      <div className="text-3xl font-extrabold mt-2">{value}</div>
     </div>
   );
 }
 
-function AlertCard({ title, subtitle, count, icon, accent, dark, onClick }) {
-  const accents = {
-    red: dark ? "text-red-400 bg-red-950/40 border-red-900/50" : "text-red-700 bg-red-50 border-red-200",
-    amber: dark ? "text-amber-400 bg-amber-950/40 border-amber-900/50" : "text-amber-700 bg-amber-50 border-amber-200",
-    blue: dark ? "text-blue-400 bg-blue-950/40 border-blue-900/50" : "text-blue-700 bg-blue-50 border-blue-200",
+function AlertBox({ title, count, icon, color, onClick }) {
+  const colors = {
+    red: "bg-red-50 border-red-200 text-red-700",
+    amber: "bg-amber-50 border-amber-200 text-amber-700",
+    blue: "bg-blue-50 border-blue-200 text-blue-700",
   };
+
   return (
     <button
       onClick={onClick}
-      className={`text-left border rounded-xl p-5 transition hover:scale-[1.01] ${accents[accent]}`}
+      className={`text-left rounded-2xl border p-6 ${colors[color]}`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="opacity-80">{icon}</div>
-        <div className="font-display text-4xl tabular leading-none">{count}</div>
+      <div className="flex justify-between items-center">
+        {React.cloneElement(icon, { size: 28 })}
+        <span className="text-4xl font-extrabold">{count}</span>
       </div>
-      <div className="font-medium text-sm">{title}</div>
-      {subtitle && <div className="text-xs opacity-70 mt-0.5">{subtitle}</div>}
+      <div className="font-extrabold mt-4">{title}</div>
     </button>
   );
 }
 
-function StatusDot({ status }) {
-  const map = {
-    expired: "bg-red-500",
-    expiring: "bg-amber-500",
-    low: "bg-blue-500",
-    ok: "bg-emerald-500",
-  };
-  return <div className={`w-2 h-2 rounded-full ${map[status]} shrink-0`} />;
-}
-
-// ---------- Products View ----------
-function ProductsView({
+function Products({
   products,
   allProducts,
   categories,
@@ -844,98 +652,110 @@ function ProductsView({
   setCategoryFilter,
   statusFilter,
   setStatusFilter,
-  onAdd,
-  onEdit,
-  onDelete,
-  onAdjustQty,
-  onExport,
-  onImport,
+  importExcel,
+  exportExcel,
+  openAdd,
+  openEdit,
+  setConfirmDelete,
+  adjustQty,
+  setExactQty,
   getStatus,
   C,
-  dark,
 }) {
-  const fileRef = React.useRef(null);
+  const fileInput = useRef(null);
 
   return (
     <div className="space-y-6">
-      {/* Header row */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
         <div>
-          <div className={`text-[11px] uppercase tracking-[0.2em] ${C.dim2} mb-2`}>
+          <div className={`text-sm font-bold uppercase tracking-widest ${C.dim2}`}>
             Catalog
           </div>
-          <h1 className="font-display text-4xl md:text-5xl tracking-tight leading-none">
-            Products
-          </h1>
-          <p className={`mt-2 text-sm ${C.dim}`}>
+          <h1 className="text-5xl font-extrabold mt-3">Products</h1>
+          <p className={`mt-4 text-lg ${C.dim}`}>
             Showing {products.length} of {allProducts.length}
           </p>
+
+          <div className="flex flex-wrap gap-2 mt-6">
+            <input
+              ref={fileInput}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) importExcel(file);
+                e.target.value = "";
+              }}
+            />
+
+            <button
+              onClick={() => fileInput.current?.click()}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-700 text-white font-bold hover:bg-blue-800"
+            >
+              <Upload size={17} />
+              Import
+            </button>
+
+            <button
+              onClick={exportExcel}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-700 text-white font-bold hover:bg-blue-800"
+            >
+              <FileSpreadsheet size={17} />
+              Export Excel
+            </button>
+
+            <button
+              onClick={openAdd}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-700 text-white font-bold hover:bg-blue-800"
+            >
+              <Plus size={17} />
+              New Product
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onImport(f);
-              e.target.value = "";
-            }}
-          />
-          <button
-            onClick={() => fileRef.current?.click()}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm border ${C.border} ${C.hover}`}
-          >
-            <Upload size={14} /> Import
-          </button>
-          <button
-            onClick={onExport}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm border ${C.border} ${C.hover}`}
-          >
-            <FileSpreadsheet size={14} /> Export Excel
-          </button>
-          <button
-            onClick={onAdd}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
-              dark ? "bg-amber-500 text-stone-950 hover:bg-amber-400" : "bg-stone-900 text-white hover:bg-stone-800"
-            }`}
-          >
-            <Plus size={15} strokeWidth={2.5} /> New Product
-          </button>
-        </div>
+
+        <QuickStockPanel
+          products={allProducts}
+          adjustQty={adjustQty}
+          setExactQty={setExactQty}
+          openEdit={openEdit}
+          C={C}
+        />
       </div>
 
-      {/* Filters */}
-      <div className={`${C.panel} ${C.border} border rounded-xl p-4 flex flex-col md:flex-row gap-3`}>
-        <div className="flex-1 relative">
-          <Search
-            size={15}
-            className={`absolute left-3 top-1/2 -translate-y-1/2 ${C.dim2}`}
-          />
-          <input
-            type="text"
-            placeholder="Search name, SKU, supplier, notes..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm ${C.input} focus:outline-none focus:ring-2 ${dark ? "focus:ring-amber-500/30" : "focus:ring-stone-900/20"}`}
-          />
-        </div>
-        <div className="flex gap-2">
+      <section className={`${C.panel} border ${C.border} rounded-3xl p-5 shadow-sm`}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px_220px] gap-3">
+          <div className="relative">
+            <Search
+              size={18}
+              className={`absolute left-3 top-1/2 -translate-y-1/2 ${C.dim2}`}
+            />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name, SKU, supplier, notes..."
+              className={`w-full pl-10 pr-4 py-3 rounded-xl border ${C.input}`}
+            />
+          </div>
+
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className={`px-3 py-2.5 rounded-lg border text-sm ${C.input} focus:outline-none`}
+            className={`px-4 py-3 rounded-xl border ${C.input}`}
           >
             <option value="all">All categories</option>
             {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
+
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className={`px-3 py-2.5 rounded-lg border text-sm ${C.input} focus:outline-none`}
+            className={`px-4 py-3 rounded-xl border ${C.input}`}
           >
             <option value="all">All status</option>
             <option value="ok">In stock</option>
@@ -944,109 +764,107 @@ function ProductsView({
             <option value="expired">Expired</option>
           </select>
         </div>
-      </div>
+      </section>
 
-      {/* Table */}
-      <div className={`${C.panel} ${C.border} border rounded-xl overflow-hidden`}>
+      <section className={`${C.panel} border ${C.border} rounded-3xl overflow-hidden shadow-sm`}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className={`border-b ${C.border} ${dark ? "bg-stone-900/60" : "bg-stone-50"}`}>
+            <thead className="bg-slate-100">
+              <tr>
                 <Th>Product</Th>
-                <Th className="hidden md:table-cell">Category</Th>
+                <Th>Category</Th>
                 <Th>Qty</Th>
-                <Th className="hidden sm:table-cell">Unit Cost</Th>
+                <Th>Unit Cost</Th>
                 <Th>Total</Th>
-                <Th className="hidden lg:table-cell">Expires</Th>
-                <Th className="hidden xl:table-cell">Supplier</Th>
+                <Th>Expires</Th>
+                <Th>Supplier</Th>
                 <Th>Status</Th>
-                <Th />
+                <Th>Actions</Th>
               </tr>
             </thead>
+
             <tbody>
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className={`text-center py-16 ${C.dim}`}>
-                    <Package size={32} className="mx-auto mb-3 opacity-50" />
-                    <div className="text-sm">No products match your filters</div>
+                  <td colSpan="9" className={`text-center py-16 ${C.dim}`}>
+                    No products found.
                   </td>
                 </tr>
               ) : (
                 products.map((p) => {
-                  const s = getStatus(p);
-                  const d = daysUntil(p.expirationDate);
+                  const status = getStatus(p);
+                  const days = daysUntil(p.expirationDate);
+
                   return (
-                    <tr key={p.id} className={`border-b ${C.border} ${C.hover} transition`}>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <StatusDot status={s} />
-                          <div className="min-w-0">
-                            <div className="font-medium truncate">{p.name}</div>
-                            <div className={`text-xs ${C.dim2} font-mono mt-0.5`}>{p.sku || "—"}</div>
-                          </div>
-                        </div>
+                    <tr key={p.id} className="border-t border-slate-200">
+                      <td className="px-4 py-4">
+                        <div className="font-bold">{p.name}</div>
+                        <div className={`text-xs ${C.dim}`}>{p.sku || "No SKU"}</div>
                       </td>
-                      <td className={`px-4 py-3.5 ${C.dim} hidden md:table-cell`}>
-                        {p.category || "—"}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1">
+
+                      <td className="px-4 py-4">{p.category || "—"}</td>
+
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
                           <button
-                            onClick={() => onAdjustQty(p.id, -1)}
-                            className={`w-6 h-6 rounded border ${C.border} ${C.hover} text-xs font-mono`}
-                            title="Decrease"
+                            onClick={() => adjustQty(p.id, -1)}
+                            className="w-8 h-8 rounded-lg border border-slate-300"
                           >
                             −
                           </button>
-                          <span className="font-mono tabular w-10 text-center font-medium">{p.quantity}</span>
+                          <span className="font-mono font-bold w-12 text-center">
+                            {p.quantity}
+                          </span>
                           <button
-                            onClick={() => onAdjustQty(p.id, 1)}
-                            className={`w-6 h-6 rounded border ${C.border} ${C.hover} text-xs font-mono`}
-                            title="Increase"
+                            onClick={() => adjustQty(p.id, 1)}
+                            className="w-8 h-8 rounded-lg border border-slate-300"
                           >
                             +
                           </button>
                         </div>
                       </td>
-                      <td className={`px-4 py-3.5 tabular hidden sm:table-cell ${C.dim}`}>
-                        {fmtMoney(p.unitCost)}
+
+                      <td className="px-4 py-4">{fmtMoney(p.unitCost)}</td>
+                      <td className="px-4 py-4 font-bold">
+                        {fmtMoney(Number(p.quantity || 0) * Number(p.unitCost || 0))}
                       </td>
-                      <td className="px-4 py-3.5 tabular font-medium">
-                        {fmtMoney(p.quantity * p.unitCost)}
-                      </td>
-                      <td className={`px-4 py-3.5 hidden lg:table-cell ${C.dim}`}>
+
+                      <td className="px-4 py-4">
                         {p.expirationDate ? (
-                          <div>
+                          <>
                             <div>{p.expirationDate}</div>
-                            <div className={`text-xs mt-0.5 ${
-                              d < 0 ? "text-red-500" : d <= 7 ? "text-amber-500" : C.dim2
-                            }`}>
-                              {d < 0 ? `${Math.abs(d)}d ago` : d === 0 ? "today" : `in ${d}d`}
+                            <div className={`text-xs ${days < 0 ? "text-red-600" : days <= 7 ? "text-amber-600" : C.dim}`}>
+                              {days < 0
+                                ? `${Math.abs(days)}d ago`
+                                : days === 0
+                                ? "today"
+                                : `in ${days}d`}
                             </div>
-                          </div>
-                        ) : "—"}
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </td>
-                      <td className={`px-4 py-3.5 hidden xl:table-cell ${C.dim} text-xs`}>
-                        {p.supplier || "—"}
+
+                      <td className="px-4 py-4">{p.supplier || "—"}</td>
+
+                      <td className="px-4 py-4">
+                        <StatusPill status={status} />
                       </td>
-                      <td className="px-4 py-3.5">
-                        <StatusPill status={s} dark={dark} />
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1 justify-end">
+
+                      <td className="px-4 py-4">
+                        <div className="flex gap-2">
                           <button
-                            onClick={() => onEdit(p)}
-                            className={`p-1.5 rounded ${C.hover} ${C.dim}`}
-                            title="Edit"
+                            onClick={() => openEdit(p)}
+                            className="p-2 rounded-lg border border-slate-300"
                           >
-                            <Edit3 size={14} />
+                            <Edit3 size={15} />
                           </button>
                           <button
-                            onClick={() => onDelete(p)}
-                            className={`p-1.5 rounded ${C.hover} text-red-500`}
-                            title="Delete"
+                            onClick={() => setConfirmDelete(p)}
+                            className="p-2 rounded-lg border border-red-300 text-red-600"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -1057,41 +875,170 @@ function ProductsView({
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-function Th({ children, className = "" }) {
+function QuickStockPanel({ products, adjustQty, setExactQty, openEdit, C }) {
+  const [selectedId, setSelectedId] = useState("");
+  const [amount, setAmount] = useState(1);
+  const [exact, setExact] = useState("");
+
+  const selected = products.find((p) => p.id === selectedId);
+
+  useEffect(() => {
+    if (selected) setExact(selected.quantity);
+  }, [selectedId]);
+
+  const amountNum = Math.max(1, Number(amount || 1));
+
   return (
-    <th className={`text-left px-4 py-3 text-[11px] font-medium uppercase tracking-wider ${className}`}>
+    <section className={`${C.panel} border ${C.border} rounded-3xl p-6 shadow-sm`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className={`text-sm font-bold uppercase tracking-widest ${C.dim2}`}>
+            Quick Controls
+          </div>
+          <h2 className="text-3xl font-extrabold mt-2">Add / Remove / Update</h2>
+        </div>
+        <Boxes size={34} className="text-blue-700" />
+      </div>
+
+      <div className="mt-6 space-y-4">
+        <div>
+          <label className={`block text-sm font-bold mb-2 ${C.dim}`}>
+            Select Product
+          </label>
+          <select
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
+          >
+            <option value="">Choose product...</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — Qty: {p.quantity}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {selected && (
+          <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
+            <div className="font-extrabold text-blue-950">{selected.name}</div>
+            <div className="text-sm text-blue-800 mt-1">
+              Current quantity: <strong>{selected.quantity}</strong>
+            </div>
+            <div className="text-sm text-blue-800">
+              Value:{" "}
+              <strong>
+                {fmtMoney(Number(selected.quantity || 0) * Number(selected.unitCost || 0))}
+              </strong>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className={`block text-sm font-bold mb-2 ${C.dim}`}>
+              Add / Remove Amount
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-bold mb-2 ${C.dim}`}>
+              Set Exact Quantity
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={exact}
+              onChange={(e) => setExact(e.target.value)}
+              disabled={!selected}
+              className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <button
+            disabled={!selected}
+            onClick={() => selected && adjustQty(selected.id, amountNum)}
+            className="px-4 py-3 rounded-xl bg-emerald-600 text-white font-extrabold hover:bg-emerald-700 disabled:opacity-40"
+          >
+            + Add
+          </button>
+
+          <button
+            disabled={!selected}
+            onClick={() => selected && adjustQty(selected.id, -amountNum)}
+            className="px-4 py-3 rounded-xl bg-red-600 text-white font-extrabold hover:bg-red-700 disabled:opacity-40"
+          >
+            − Remove
+          </button>
+
+          <button
+            disabled={!selected}
+            onClick={() => selected && setExactQty(selected.id, exact)}
+            className="px-4 py-3 rounded-xl bg-blue-700 text-white font-extrabold hover:bg-blue-800 disabled:opacity-40"
+          >
+            Update
+          </button>
+
+          <button
+            disabled={!selected}
+            onClick={() => selected && openEdit(selected)}
+            className="px-4 py-3 rounded-xl bg-slate-800 text-white font-extrabold hover:bg-slate-900 disabled:opacity-40"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Th({ children }) {
+  return (
+    <th className="px-4 py-4 text-left text-xs font-extrabold uppercase tracking-wider text-slate-600">
       {children}
     </th>
   );
 }
 
-function StatusPill({ status, dark }) {
+function StatusPill({ status }) {
   const styles = {
-    expired: dark ? "bg-red-950/50 text-red-300 border-red-900/60" : "bg-red-50 text-red-700 border-red-200",
-    expiring: dark ? "bg-amber-950/50 text-amber-300 border-amber-900/60" : "bg-amber-50 text-amber-700 border-amber-200",
-    low: dark ? "bg-blue-950/50 text-blue-300 border-blue-900/60" : "bg-blue-50 text-blue-700 border-blue-200",
-    ok: dark ? "bg-emerald-950/50 text-emerald-300 border-emerald-900/60" : "bg-emerald-50 text-emerald-700 border-emerald-200",
+    ok: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    low: "bg-blue-50 text-blue-700 border-blue-200",
+    expiring: "bg-amber-50 text-amber-700 border-amber-200",
+    expired: "bg-red-50 text-red-700 border-red-200",
   };
-  const label = {
-    expired: "Expired",
-    expiring: "Expiring",
-    low: "Low stock",
+
+  const labels = {
     ok: "In stock",
+    low: "Low stock",
+    expiring: "Expiring",
+    expired: "Expired",
   };
+
   return (
-    <span className={`inline-flex text-[10px] uppercase tracking-wider font-medium px-2 py-1 rounded border ${styles[status]}`}>
-      {label[status]}
+    <span
+      className={`inline-flex px-3 py-1 rounded-full border text-xs font-extrabold ${styles[status]}`}
+    >
+      {labels[status]}
     </span>
   );
 }
 
-// ---------- Modal ----------
-function ProductModal({ initial, onClose, onSave, categories, C, dark }) {
+function ProductModal({ initial, categories, onClose, onSave, C }) {
   const [form, setForm] = useState(
     initial || {
       name: "",
@@ -1104,151 +1051,155 @@ function ProductModal({ initial, onClose, onSave, categories, C, dark }) {
       notes: "",
     }
   );
+
   const [errors, setErrors] = useState({});
 
-  const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const update = (key, value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+  };
 
   const submit = (e) => {
     e.preventDefault();
-    const errs = {};
-    if (!form.name.trim()) errs.name = "Required";
-    if (Number(form.quantity) < 0) errs.quantity = "Must be ≥ 0";
-    if (Number(form.unitCost) < 0) errs.unitCost = "Must be ≥ 0";
-    if (Object.keys(errs).length) return setErrors(errs);
+
+    const newErrors = {};
+    if (!String(form.name || "").trim()) newErrors.name = "Product name is required";
+    if (Number(form.quantity) < 0) newErrors.quantity = "Quantity must be 0 or more";
+    if (Number(form.unitCost) < 0) newErrors.unitCost = "Cost must be 0 or more";
+
+    if (Object.keys(newErrors).length) {
+      setErrors(newErrors);
+      return;
+    }
+
     onSave({
       ...form,
-      quantity: Number(form.quantity),
-      unitCost: Number(form.unitCost),
+      quantity: Number(form.quantity || 0),
+      unitCost: Number(form.unitCost || 0),
     });
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div
-        className={`${C.panel} border ${C.border} rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${C.border}`}>
+    <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+      <div className={`${C.panel} ${C.text} border ${C.border} rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-hidden`}>
+        <div className={`px-6 py-4 border-b ${C.border} flex justify-between items-center`}>
           <div>
-            <div className={`text-[11px] uppercase tracking-[0.18em] ${C.dim2}`}>
-              {initial ? "Edit" : "Create"}
+            <div className={`text-sm uppercase tracking-widest font-bold ${C.dim2}`}>
+              {initial ? "Edit Product" : "New Product"}
             </div>
-            <div className="font-display text-xl tracking-tight">
-              {initial ? initial.name : "New product"}
-            </div>
+            <h2 className="text-2xl font-extrabold">
+              {initial ? initial.name : "Create product"}
+            </h2>
           </div>
-          <button onClick={onClose} className={`p-2 rounded-lg ${C.hover}`}>
+
+          <button onClick={onClose} className="p-2 rounded-xl border border-slate-300">
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={submit} className="flex-1 overflow-y-auto p-6 space-y-4">
+        <form onSubmit={submit} className="p-6 overflow-y-auto max-h-[70vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Product name *" error={errors.name} full>
+            <Field label="Product Name" error={errors.name} full>
               <input
-                type="text"
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm ${C.input}`}
-                placeholder="e.g. Organic Whole Milk"
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
             </Field>
+
             <Field label="SKU / Barcode">
               <input
-                type="text"
                 value={form.sku}
                 onChange={(e) => update("sku", e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm font-mono ${C.input}`}
-                placeholder="DRY-001"
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
             </Field>
+
             <Field label="Category">
               <input
-                type="text"
-                list="categories"
+                list="category-list"
                 value={form.category}
                 onChange={(e) => update("category", e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm ${C.input}`}
-                placeholder="Dairy"
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
-              <datalist id="categories">
-                {categories.map((c) => <option key={c} value={c} />)}
+              <datalist id="category-list">
+                {categories.map((c) => (
+                  <option key={c} value={c} />
+                ))}
               </datalist>
             </Field>
+
             <Field label="Quantity" error={errors.quantity}>
               <input
                 type="number"
                 min="0"
                 value={form.quantity}
                 onChange={(e) => update("quantity", e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm tabular ${C.input}`}
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
             </Field>
-            <Field label="Unit cost" error={errors.unitCost}>
+
+            <Field label="Unit Cost" error={errors.unitCost}>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={form.unitCost}
                 onChange={(e) => update("unitCost", e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm tabular ${C.input}`}
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
             </Field>
-            <Field label="Expiration date">
+
+            <Field label="Expiration Date">
               <input
                 type="date"
                 value={form.expirationDate}
                 onChange={(e) => update("expirationDate", e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm ${C.input}`}
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
             </Field>
+
             <Field label="Supplier">
               <input
-                type="text"
                 value={form.supplier}
                 onChange={(e) => update("supplier", e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm ${C.input}`}
-                placeholder="Valley Farms Co."
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
             </Field>
+
             <Field label="Notes" full>
               <textarea
+                rows="3"
                 value={form.notes}
                 onChange={(e) => update("notes", e.target.value)}
-                rows={3}
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm resize-none ${C.input}`}
-                placeholder="Storage instructions, reorder notes, etc."
+                className={`w-full px-4 py-3 rounded-xl border ${C.input}`}
               />
             </Field>
           </div>
 
-          {/* Live total */}
-          <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${C.subtle}`}>
-            <div className={`text-xs ${C.dim} flex items-center gap-2`}>
-              <DollarSign size={14} /> Calculated total cost
-            </div>
-            <div className="font-mono tabular font-medium">
+          <div className="mt-6 rounded-2xl bg-slate-100 p-4 flex justify-between">
+            <span className="font-bold text-slate-600">Calculated Total</span>
+            <span className="font-extrabold">
               {fmtMoney(Number(form.quantity || 0) * Number(form.unitCost || 0))}
-            </div>
+            </span>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-3 rounded-xl border border-slate-300 font-bold"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              className="px-5 py-3 rounded-xl bg-blue-700 text-white font-extrabold hover:bg-blue-800"
+            >
+              {initial ? "Save Changes" : "Create Product"}
+            </button>
           </div>
         </form>
-
-        <div className={`flex justify-end gap-2 px-6 py-4 border-t ${C.border}`}>
-          <button
-            onClick={onClose}
-            className={`px-4 py-2 rounded-lg text-sm ${C.hover} ${C.dim}`}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={submit}
-            className={`px-5 py-2 rounded-lg text-sm font-medium ${
-              dark ? "bg-amber-500 text-stone-950 hover:bg-amber-400" : "bg-stone-900 text-white hover:bg-stone-800"
-            }`}
-          >
-            {initial ? "Save changes" : "Create product"}
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -1257,47 +1208,41 @@ function ProductModal({ initial, onClose, onSave, categories, C, dark }) {
 function Field({ label, children, error, full }) {
   return (
     <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-xs font-medium uppercase tracking-wider opacity-70 mb-1.5">
-        {label}
-      </label>
+      <label className="block text-sm font-bold mb-2">{label}</label>
       {children}
-      {error && <div className="text-xs text-red-500 mt-1">{error}</div>}
+      {error && <div className="text-sm text-red-600 mt-1">{error}</div>}
     </div>
   );
 }
 
-// ---------- Confirm dialog ----------
-function ConfirmDialog({ product, onCancel, onConfirm, C, dark }) {
+function ConfirmDialog({ product, onCancel, onConfirm, C }) {
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={onCancel}
-    >
-      <div
-        className={`${C.panel} border ${C.border} rounded-2xl max-w-md w-full p-6 shadow-2xl`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start gap-4">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${dark ? "bg-red-950/60 text-red-400" : "bg-red-50 text-red-600"}`}>
-            <AlertTriangle size={18} />
+    <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+      <div className={`${C.panel} ${C.text} border ${C.border} rounded-3xl p-6 max-w-md w-full`}>
+        <div className="flex gap-4">
+          <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center">
+            <AlertTriangle size={22} />
           </div>
-          <div className="flex-1">
-            <div className="font-display text-lg tracking-tight mb-1">Delete product?</div>
-            <div className={`text-sm ${C.dim}`}>
-              You're about to remove <span className="font-medium">{product.name}</span>. This can't be undone.
-            </div>
+
+          <div>
+            <h2 className="text-2xl font-extrabold">Delete product?</h2>
+            <p className={`mt-2 ${C.dim}`}>
+              You are about to delete <strong>{product.name}</strong>. This cannot be undone.
+            </p>
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
+
+        <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={onCancel}
-            className={`px-4 py-2 rounded-lg text-sm ${C.hover} ${C.dim}`}
+            className="px-5 py-3 rounded-xl border border-slate-300 font-bold"
           >
             Cancel
           </button>
+
           <button
             onClick={onConfirm}
-            className="px-5 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+            className="px-5 py-3 rounded-xl bg-red-600 text-white font-extrabold hover:bg-red-700"
           >
             Delete
           </button>
