@@ -132,44 +132,53 @@ export default function InventoryApp() {
   const [toast, setToast] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // ---------- Load from storage ----------
+  // ---------- Load from localStorage ----------
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await window.storage.get(STORAGE_KEY);
-        if (res && res.value) {
-          setProducts(JSON.parse(res.value));
-        } else {
-          setProducts(seedProducts);
-        }
-      } catch {
+    try {
+      const savedProducts = localStorage.getItem(STORAGE_KEY);
+
+      if (savedProducts) {
+        setProducts(JSON.parse(savedProducts));
+      } else {
         setProducts(seedProducts);
       }
-      try {
-        const t = await window.storage.get(THEME_KEY);
-        if (t && t.value === "dark") setDark(true);
-      } catch {}
-      setLoaded(true);
-    })();
+    } catch (error) {
+      console.error("Failed to load products:", error);
+      setProducts(seedProducts);
+    }
+
+    try {
+      const savedTheme = localStorage.getItem(THEME_KEY);
+      if (savedTheme === "dark") {
+        setDark(true);
+      }
+    } catch (error) {
+      console.error("Failed to load theme:", error);
+    }
+
+    setLoaded(true);
   }, []);
 
-  // ---------- Persist ----------
+  // ---------- Persist products ----------
   useEffect(() => {
     if (!loaded) return;
-    (async () => {
-      try {
-        await window.storage.set(STORAGE_KEY, JSON.stringify(products));
-      } catch {}
-    })();
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    } catch (error) {
+      console.error("Failed to save products:", error);
+    }
   }, [products, loaded]);
 
+  // ---------- Persist theme ----------
   useEffect(() => {
     if (!loaded) return;
-    (async () => {
-      try {
-        await window.storage.set(THEME_KEY, dark ? "dark" : "light");
-      } catch {}
-    })();
+
+    try {
+      localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+    } catch (error) {
+      console.error("Failed to save theme:", error);
+    }
   }, [dark, loaded]);
 
   // ---------- Toast ----------
