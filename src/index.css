@@ -829,4 +829,70 @@ main section:nth-of-type(2) button {
     grid-template-columns: 1fr !important;
   }
 }
+/* FIX: Make dashboard cards line up side by side */
+
+/* Basic Tailwind-like grid utilities */
+.grid {
+  display: grid !important;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.gap-4 {
+  gap: 16px !important;
+}
+
+.gap-6 {
+  gap: 24px !important;
+}
+
+.space-y-8 > * + * {
+  margin-top: 32px !important;
+}
+
+/* Dashboard metric cards: 4 beside each other */
+main section:first-of-type > .grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+/* Expired / Expiring / Low Stock cards: 3 beside each other */
+main section:nth-of-type(2) {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+/* Make cards look clean */
+main section:first-of-type > .grid > div,
+main section:nth-of-type(2) > button {
+  background: #ffffff !important;
+  border: 1px solid #d7dee8 !important;
+  border-radius: 22px !important;
+  padding: 24px !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+  min-height: 145px !important;
+}
+
+/* Tablet */
+@media (max-width: 1000px) {
+  main section:first-of-type > .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  main section:nth-of-type(2) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 650px) {
+  main section:first-of-type > .grid,
+  main section:nth-of-type(2) {
+    grid-template-columns: 1fr !important;
+  }
+}
 }
