@@ -761,4 +761,72 @@ td button[class*="w-8"] {
     grid-column: span 1 !important;
   }
 }
+
+/* Dashboard cards side-by-side fix */
+
+main section:first-of-type .grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+main section:first-of-type .grid > div {
+  background: #ffffff !important;
+  border: 1px solid #d7dee8 !important;
+  border-radius: 22px !important;
+  padding: 24px !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+  min-height: 150px !important;
+}
+
+main section:first-of-type .grid > div svg {
+  width: 34px !important;
+  height: 34px !important;
+  margin-bottom: 14px !important;
+}
+
+main section:first-of-type .grid > div div:nth-child(2) {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  color: #64748b !important;
+  letter-spacing: 0.06em !important;
+}
+
+main section:first-of-type .grid > div div:nth-child(3) {
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  color: #0f172a !important;
+  margin-top: 10px !important;
+}
+
+/* Alert cards side-by-side */
+main section:nth-of-type(2) {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+main section:nth-of-type(2) button {
+  min-height: 150px !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 900px) {
+  main section:first-of-type .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  main section:nth-of-type(2) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 520px) {
+  main section:first-of-type .grid {
+    grid-template-columns: 1fr !important;
+  }
+}
 }
