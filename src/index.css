@@ -1,34 +1,40 @@
-/* Stockroom Inventory Manager - Professional Business Theme */
+/* Stockroom Inventory Manager - Professional Business Theme + Modal Fix */
 
 * {
   box-sizing: border-box;
 }
 
 :root {
-  --bg: #f4f6f8;
+  --bg: #f4f7fb;
   --surface: #ffffff;
-  --surface-soft: #f9fafb;
-  --border: #d9dee7;
-  --border-strong: #b8c0cc;
+  --surface-soft: #f8fafc;
+  --border: #d7dee8;
+  --border-strong: #b8c2d1;
 
-  --text: #101828;
-  --muted: #667085;
-  --muted-dark: #475467;
+  --text: #0f172a;
+  --muted: #64748b;
+  --muted-dark: #475569;
 
-  --primary: #1f4e79;
-  --primary-dark: #173b5c;
-  --primary-soft: #e8f1f8;
+  --primary: #1f5f99;
+  --primary-dark: #174a78;
+  --primary-soft: #e9f2fb;
 
   --success: #15803d;
+  --success-soft: #ecfdf3;
+
   --warning: #b45309;
+  --warning-soft: #fffbeb;
+
   --danger: #b42318;
+  --danger-soft: #fef3f2;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
 
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
-  --shadow-md: 0 8px 22px rgba(16, 24, 40, 0.08);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.22);
 }
 
 html,
@@ -48,7 +54,7 @@ body {
 /* App background */
 .min-h-screen {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%) !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%) !important;
   color: var(--text) !important;
 }
 
@@ -58,8 +64,8 @@ header {
   border-bottom: 1px solid var(--border) !important;
   box-shadow: var(--shadow-sm) !important;
   position: sticky !important;
-  top: 0;
-  z-index: 40;
+  top: 0 !important;
+  z-index: 30 !important;
   backdrop-filter: blur(10px);
 }
 
@@ -70,21 +76,21 @@ header > div {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 24px !important;
+  gap: 20px !important;
   flex-wrap: wrap !important;
 }
 
-/* Brand */
+/* Brand area */
 header > div > div:first-child {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
+  gap: 14px !important;
 }
 
 header > div > div:first-child > div:first-child {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 12px !important;
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 14px !important;
   background: var(--primary) !important;
   color: #ffffff !important;
   display: flex !important;
@@ -93,50 +99,53 @@ header > div > div:first-child > div:first-child {
   box-shadow: var(--shadow-sm) !important;
 }
 
-header .font-display {
+/* Header title */
+header .font-display,
+header .text-2xl {
   font-family: Inter, Arial, Helvetica, sans-serif !important;
-  font-size: 24px !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.03em !important;
+  font-size: 26px !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.04em !important;
   color: var(--text) !important;
   line-height: 1.1 !important;
 }
 
-header .font-display span {
+header .font-display span,
+header .text-2xl span {
   color: var(--primary) !important;
 }
 
-header .font-display + div {
-  margin-top: 2px !important;
-  font-size: 13px !important;
+header .font-display + div,
+header .text-2xl + div {
+  margin-top: 4px !important;
+  font-size: 14px !important;
   color: var(--muted) !important;
-  letter-spacing: 0.02em !important;
 }
 
-/* Header navigation */
+/* Header nav */
 nav {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 10px !important;
   flex-wrap: wrap !important;
 }
 
-/* Buttons */
+/* Global buttons */
 button,
 label {
   font-family: Inter, Arial, Helvetica, sans-serif !important;
-  border-radius: var(--radius-sm) !important;
+  border-radius: 12px !important;
   border: 1px solid var(--border-strong) !important;
   background: #ffffff !important;
   color: var(--muted-dark) !important;
   font-size: 14px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   line-height: 1.2 !important;
-  padding: 9px 13px !important;
-  min-height: 38px !important;
+  padding: 10px 15px !important;
+  min-height: 40px !important;
   box-shadow: var(--shadow-sm) !important;
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.16s ease-in-out;
 }
 
 button:hover,
@@ -151,30 +160,53 @@ label:active {
   transform: translateY(1px);
 }
 
-/* Icon buttons */
-button:has(svg),
-label:has(svg) {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 7px !important;
+button:disabled,
+label:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
 }
 
-/* Important / primary buttons */
-button[class*="bg-"],
+/* Icon buttons */
+button svg,
+label svg {
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Primary buttons */
+button[class*="bg-blue"],
+button[class*="bg-slate-900"],
+button[class*="bg-stone-900"],
 button[type="submit"] {
   background: var(--primary) !important;
   border-color: var(--primary) !important;
   color: #ffffff !important;
 }
 
-button[class*="bg-"]:hover,
+button[class*="bg-blue"]:hover,
+button[class*="bg-slate-900"]:hover,
+button[class*="bg-stone-900"]:hover,
 button[type="submit"]:hover {
   background: var(--primary-dark) !important;
   border-color: var(--primary-dark) !important;
+  color: #ffffff !important;
 }
 
-/* Main layout */
+/* Success button */
+button[class*="bg-emerald"] {
+  background: var(--success) !important;
+  border-color: var(--success) !important;
+  color: #ffffff !important;
+}
+
+/* Danger button */
+button[class*="bg-red"] {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: #ffffff !important;
+}
+
+/* Main area */
 main {
   max-width: 1280px !important;
   margin: 0 auto !important;
@@ -187,18 +219,18 @@ h2,
 h3 {
   font-family: Inter, Arial, Helvetica, sans-serif !important;
   color: var(--text) !important;
-  letter-spacing: -0.03em !important;
+  letter-spacing: -0.04em !important;
 }
 
 h1 {
-  font-size: clamp(34px, 5vw, 58px) !important;
-  font-weight: 850 !important;
+  font-size: clamp(36px, 5vw, 60px) !important;
+  font-weight: 900 !important;
   line-height: 1.02 !important;
 }
 
 h2 {
   font-size: 28px !important;
-  font-weight: 800 !important;
+  font-weight: 850 !important;
 }
 
 h3 {
@@ -206,7 +238,7 @@ h3 {
   font-weight: 800 !important;
 }
 
-/* Paragraphs and secondary text */
+/* Text */
 p,
 span,
 small,
@@ -214,12 +246,25 @@ div {
   line-height: 1.45;
 }
 
-/* Cards / panels */
+/* Cards / sections */
+section,
+article,
+.bg-white,
+[class*="bg-white"],
+main > div > div,
+.rounded-3xl,
 .rounded-2xl,
 .rounded-xl,
 .rounded-lg,
 [class*="rounded"] {
   border-radius: var(--radius-lg) !important;
+}
+
+section,
+article,
+.bg-white,
+[class*="bg-white"] {
+  background: var(--surface) !important;
 }
 
 .border,
@@ -228,21 +273,11 @@ div {
 }
 
 .shadow,
+.shadow-sm,
+.shadow-md,
 .shadow-lg,
 [class*="shadow"] {
   box-shadow: var(--shadow-md) !important;
-}
-
-.bg-white,
-[class*="bg-white"],
-main section,
-main article {
-  background: var(--surface) !important;
-}
-
-/* Dashboard metric cards */
-main [class*="grid"] > div {
-  border-color: var(--border) !important;
 }
 
 /* Inputs */
@@ -254,21 +289,20 @@ input[type="date"],
 textarea,
 select {
   font-family: Inter, Arial, Helvetica, sans-serif !important;
-  width: auto;
   background: #ffffff !important;
   color: var(--text) !important;
   border: 1px solid var(--border-strong) !important;
-  border-radius: var(--radius-sm) !important;
-  font-size: 14px !important;
-  padding: 10px 12px !important;
-  min-height: 40px !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 15px !important;
+  padding: 11px 13px !important;
+  min-height: 42px !important;
   box-shadow: var(--shadow-sm) !important;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.16s ease-in-out;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #98a2b3 !important;
+  color: #94a3b8 !important;
 }
 
 input:focus,
@@ -276,13 +310,11 @@ textarea:focus,
 select:focus {
   outline: none !important;
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 4px rgba(31, 78, 121, 0.14) !important;
+  box-shadow: 0 0 0 4px rgba(31, 95, 153, 0.15) !important;
 }
 
-/* Search box */
-input[placeholder*="Search"] {
-  width: 100% !important;
-  max-width: 560px !important;
+textarea {
+  resize: vertical;
 }
 
 /* File input */
@@ -292,11 +324,6 @@ input[type="file"] {
   background: var(--surface-soft) !important;
 }
 
-/* Select */
-select {
-  cursor: pointer;
-}
-
 /* Tables */
 table {
   width: 100% !important;
@@ -304,53 +331,49 @@ table {
   border-spacing: 0 !important;
   background: #ffffff !important;
   font-size: 14px !important;
-  overflow: hidden !important;
 }
 
 thead {
-  background: #f2f4f7 !important;
+  background: #f1f5f9 !important;
 }
 
 th {
-  background: #f2f4f7 !important;
+  background: #f1f5f9 !important;
   color: var(--muted-dark) !important;
   font-size: 12px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.04em !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
   border-bottom: 1px solid var(--border) !important;
-  padding: 13px 14px !important;
+  padding: 14px 16px !important;
   text-align: left !important;
 }
 
 td {
   color: var(--text) !important;
-  border-bottom: 1px solid #edf0f3 !important;
-  padding: 14px !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  padding: 14px 16px !important;
   vertical-align: middle !important;
 }
 
 tbody tr:hover td {
-  background: #f8fbfd !important;
+  background: #f8fbff !important;
 }
 
-/* Table wrapper if present */
+/* Table wrapper */
 .overflow-x-auto {
   border-radius: var(--radius-lg) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow-sm) !important;
   background: #ffffff !important;
 }
 
-/* Status badges / pills */
+/* Status pills */
 [class*="rounded-full"] {
   border-radius: 999px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
 }
 
-/* Alert/status colors */
-[class*="text-red"],
-[class*="text-rose"] {
+/* Colors */
+[class*="text-red"] {
   color: var(--danger) !important;
 }
 
@@ -368,24 +391,11 @@ tbody tr:hover td {
   color: var(--primary) !important;
 }
 
-/* Modal overlay */
-.fixed {
-  background: rgba(15, 23, 42, 0.52) !important;
-}
-
-/* Forms / dialogs */
-form,
-[role="dialog"] {
+/* Footer */
+footer {
   background: #ffffff !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-lg) !important;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
-}
-
-/* SVG icons */
-svg {
-  flex-shrink: 0;
+  border-top: 1px solid var(--border) !important;
+  color: var(--muted) !important;
 }
 
 /* Keep hidden elements hidden */
@@ -393,10 +403,191 @@ svg {
   display: none !important;
 }
 
-/* Mobile */
-@media (max-width: 900px) {
+/* =========================================
+   FIX: Center Add/Edit Product Modal
+   ========================================= */
+
+.fixed.inset-0 {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  z-index: 9999 !important;
+}
+
+/* Modal box */
+.fixed.inset-0 > div {
+  width: 100% !important;
+  max-width: 760px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border-radius: 22px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+  margin: 0 !important;
+}
+
+/* Modal header */
+.fixed.inset-0 > div > div:first-child {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 20px 24px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
+}
+
+/* Modal title */
+.fixed.inset-0 h2 {
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  color: var(--text) !important;
+  margin: 0 !important;
+}
+
+/* Modal form */
+.fixed.inset-0 form {
+  padding: 24px !important;
+  display: block !important;
+  background: #ffffff !important;
+}
+
+/* Modal form grid */
+.fixed.inset-0 form .grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+/* Modal labels */
+.fixed.inset-0 label {
+  display: block !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 7px !important;
+  color: #344054 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-align: left !important;
+  min-height: auto !important;
+}
+
+/* Modal inputs */
+.fixed.inset-0 input,
+.fixed.inset-0 textarea,
+.fixed.inset-0 select {
+  width: 100% !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  font-size: 15px !important;
+  color: #111827 !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Modal textarea */
+.fixed.inset-0 textarea {
+  min-height: 90px !important;
+}
+
+/* Modal bottom area */
+.fixed.inset-0 form + div,
+.fixed.inset-0 .mt-6 {
+  background: transparent !important;
+}
+
+/* Modal buttons */
+.fixed.inset-0 button {
+  border-radius: 12px !important;
+  padding: 11px 18px !important;
+  font-size: 15px !important;
+  font-weight: 850 !important;
+}
+
+/* Close button */
+.fixed.inset-0 > div > div:first-child button {
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Calculated total box */
+.fixed.inset-0 .bg-slate-100 {
+  background: #f1f5f9 !important;
+  border-radius: 14px !important;
+}
+
+/* =========================================
+   Product Page Layout
+   ========================================= */
+
+.grid {
+  gap: 24px;
+}
+
+/* Quick control panel */
+section:has(select) {
+  background: var(--surface) !important;
+}
+
+/* Product action buttons */
+td button {
+  min-width: auto !important;
+}
+
+/* Quantity buttons in table */
+td button.w-8,
+td button[class*="w-8"] {
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+
+@media (max-width: 1000px) {
   header > div {
     padding: 16px !important;
+    align-items: stretch !important;
+  }
+
+  nav {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  main {
+    padding: 24px 16px 50px !important;
+  }
+
+  h1 {
+    font-size: 40px !important;
+  }
+
+  h2 {
+    font-size: 24px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  header > div {
+    flex-direction: column !important;
     align-items: stretch !important;
   }
 
@@ -405,26 +596,20 @@ svg {
   }
 
   nav {
-    width: 100% !important;
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr !important;
   }
 
-  nav button,
-  nav label {
+  nav button {
     width: 100% !important;
   }
 
-  main {
-    padding: 24px 16px 50px !important;
-  }
-
-  h1 {
-    font-size: 36px !important;
-  }
-
-  h2 {
-    font-size: 24px !important;
+  button,
+  label,
+  input,
+  select,
+  textarea {
+    width: 100% !important;
   }
 
   table {
@@ -435,19 +620,21 @@ svg {
   td {
     padding: 10px !important;
   }
-}
 
-/* Small phones */
-@media (max-width: 540px) {
-  nav {
+  .fixed.inset-0 {
+    padding: 12px !important;
+  }
+
+  .fixed.inset-0 form .grid {
     grid-template-columns: 1fr !important;
   }
 
-  button,
-  label,
-  input,
-  select,
-  textarea {
-    width: 100% !important;
+  .fixed.inset-0 > div {
+    max-height: 94vh !important;
+    border-radius: 18px !important;
+  }
+
+  .fixed.inset-0 h2 {
+    font-size: 22px !important;
   }
 }
