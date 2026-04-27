@@ -1,7 +1,34 @@
-/* Stockroom Inventory Manager - Simple Home Page Style */
+/* Stockroom Inventory Manager - Professional Business Theme */
 
 * {
   box-sizing: border-box;
+}
+
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-soft: #f9fafb;
+  --border: #d9dee7;
+  --border-strong: #b8c0cc;
+
+  --text: #101828;
+  --muted: #667085;
+  --muted-dark: #475467;
+
+  --primary: #1f4e79;
+  --primary-dark: #173b5c;
+  --primary-soft: #e8f1f8;
+
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #b42318;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 8px 22px rgba(16, 24, 40, 0.08);
 }
 
 html,
@@ -9,249 +36,418 @@ body,
 #root {
   margin: 0;
   min-height: 100%;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #ffffff;
-  color: #000000;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
 body {
-  border: 4px solid #e5e5e5;
+  min-height: 100vh;
 }
 
-/* Main app container */
+/* App background */
 .min-h-screen {
   min-height: 100vh;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%) !important;
+  color: var(--text) !important;
 }
 
 /* Header */
 header {
-  border: none !important;
-  background: #ffffff !important;
-  position: static !important;
-  padding-top: 45px;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  position: sticky !important;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(10px);
 }
 
 header > div {
-  max-width: 1100px !important;
+  max-width: 1280px !important;
   margin: 0 auto !important;
-  padding: 0 20px !important;
-  display: grid !important;
-  grid-template-columns: 220px 1fr 220px !important;
-  align-items: start !important;
-  gap: 80px !important;
+  padding: 18px 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  flex-wrap: wrap !important;
 }
 
-/* Logo/title area */
+/* Brand */
 header > div > div:first-child {
-  grid-column: 2;
-  grid-row: 1;
-  justify-content: center !important;
-  text-align: center;
-  background: #ffc000;
-  border: 2px solid #003f3f;
-  padding: 8px 20px;
-  min-width: 520px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
 }
 
-/* Hide logo icon */
 header > div > div:first-child > div:first-child {
-  display: none !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
-/* App title */
 header .font-display {
-  font-family: Arial, Helvetica, sans-serif !important;
-  font-size: 28px !important;
+  font-family: Inter, Arial, Helvetica, sans-serif !important;
+  font-size: 24px !important;
   font-weight: 800 !important;
-  color: #000000 !important;
-  line-height: 1 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--text) !important;
+  line-height: 1.1 !important;
 }
 
-header .font-display::after {
-  content: " Inventory Manage";
+header .font-display span {
+  color: var(--primary) !important;
 }
 
-header .font-display span,
 header .font-display + div {
-  display: none !important;
+  margin-top: 2px !important;
+  font-size: 13px !important;
+  color: var(--muted) !important;
+  letter-spacing: 0.02em !important;
 }
 
-/* Navigation */
+/* Header navigation */
 nav {
   display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  grid-column: 3;
-  grid-row: 1 / span 2;
-  margin-left: 0 !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
 }
 
-/* Make all header buttons green boxes */
+/* Buttons */
 button,
 label {
-  background: #c6efce !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  border-radius: 0 !important;
-  font-size: 28px !important;
-  font-weight: 400 !important;
-  padding: 8px 14px !important;
-  min-height: 52px;
-  box-shadow: none !important;
+  font-family: Inter, Arial, Helvetica, sans-serif !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--border-strong) !important;
+  background: #ffffff !important;
+  color: var(--muted-dark) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  padding: 9px 13px !important;
+  min-height: 38px !important;
+  box-shadow: var(--shadow-sm) !important;
   cursor: pointer;
+  transition: all 0.15s ease-in-out;
 }
 
 button:hover,
 label:hover {
-  background: #b7e4c1 !important;
+  background: var(--primary-soft) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary-dark) !important;
 }
 
-/* Left file/import/export buttons */
-header > div > div:nth-last-child(2),
-header > div > div:nth-last-child(3) {
-  grid-column: 1;
+button:active,
+label:active {
+  transform: translateY(1px);
 }
 
-/* File upload/import/export area */
-header input[type="file"] {
-  width: 220px;
-  font-size: 20px;
+/* Icon buttons */
+button:has(svg),
+label:has(svg) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
 }
 
-/* Theme button */
-header button[title],
-header button:has(svg) {
-  min-width: 70px;
+/* Important / primary buttons */
+button[class*="bg-"],
+button[type="submit"] {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
 }
 
-/* New product button */
-header button {
-  text-align: left;
+button[class*="bg-"]:hover,
+button[type="submit"]:hover {
+  background: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
 }
 
-/* Search area */
+/* Main layout */
 main {
-  max-width: 1100px !important;
+  max-width: 1280px !important;
   margin: 0 auto !important;
-  padding: 100px 20px 40px !important;
+  padding: 34px 28px 70px !important;
 }
 
-/* Search input */
-input[type="search"],
-input[placeholder*="Search"],
-input {
-  background: #c6efce !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  border-radius: 0 !important;
+/* Headings */
+h1,
+h2,
+h3 {
+  font-family: Inter, Arial, Helvetica, sans-serif !important;
+  color: var(--text) !important;
+  letter-spacing: -0.03em !important;
+}
+
+h1 {
+  font-size: clamp(34px, 5vw, 58px) !important;
+  font-weight: 850 !important;
+  line-height: 1.02 !important;
+}
+
+h2 {
   font-size: 28px !important;
-  padding: 8px 14px !important;
-  height: 52px;
+  font-weight: 800 !important;
 }
 
-main input[placeholder*="Search"] {
-  display: block;
-  width: 440px !important;
-  margin: 0 auto 40px auto !important;
+h3 {
+  font-size: 18px !important;
+  font-weight: 800 !important;
 }
 
-/* Hide decorative dashboard text if you want a simple homepage */
-main h1 {
-  font-family: Arial, Helvetica, sans-serif !important;
-  font-size: 36px !important;
-  font-weight: 700 !important;
-  text-align: center;
+/* Paragraphs and secondary text */
+p,
+span,
+small,
+div {
+  line-height: 1.45;
 }
 
-/* Cards and panels */
+/* Cards / panels */
 .rounded-2xl,
 .rounded-xl,
-.rounded-lg {
-  border-radius: 0 !important;
+.rounded-lg,
+[class*="rounded"] {
+  border-radius: var(--radius-lg) !important;
 }
 
-.border {
-  border: 2px solid #000000 !important;
+.border,
+[class*="border"] {
+  border-color: var(--border) !important;
 }
 
 .shadow,
-.shadow-lg {
-  box-shadow: none !important;
+.shadow-lg,
+[class*="shadow"] {
+  box-shadow: var(--shadow-md) !important;
 }
 
-/* Dashboard panels */
-main > div {
-  background: #ffffff !important;
+.bg-white,
+[class*="bg-white"],
+main section,
+main article {
+  background: var(--surface) !important;
 }
 
-/* Select boxes */
+/* Dashboard metric cards */
+main [class*="grid"] > div {
+  border-color: var(--border) !important;
+}
+
+/* Inputs */
+input,
+input[type="search"],
+input[type="text"],
+input[type="number"],
+input[type="date"],
+textarea,
 select {
-  background: #c6efce !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  border-radius: 0 !important;
-  font-size: 20px !important;
-  padding: 8px 12px !important;
+  font-family: Inter, Arial, Helvetica, sans-serif !important;
+  width: auto;
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  min-height: 40px !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 0.15s ease-in-out;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #98a2b3 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(31, 78, 121, 0.14) !important;
+}
+
+/* Search box */
+input[placeholder*="Search"] {
+  width: 100% !important;
+  max-width: 560px !important;
+}
+
+/* File input */
+input[type="file"] {
+  box-shadow: none !important;
+  border: 1px dashed var(--border-strong) !important;
+  background: var(--surface-soft) !important;
+}
+
+/* Select */
+select {
+  cursor: pointer;
 }
 
 /* Tables */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 18px;
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: #ffffff !important;
+  font-size: 14px !important;
+  overflow: hidden !important;
 }
 
-th,
-td {
-  border: 1px solid #000000;
-  padding: 10px;
-  text-align: left;
+thead {
+  background: #f2f4f7 !important;
 }
 
 th {
-  background: #ffc000;
-  font-weight: 700;
+  background: #f2f4f7 !important;
+  color: var(--muted-dark) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 13px 14px !important;
+  text-align: left !important;
 }
 
-/* Modal */
+td {
+  color: var(--text) !important;
+  border-bottom: 1px solid #edf0f3 !important;
+  padding: 14px !important;
+  vertical-align: middle !important;
+}
+
+tbody tr:hover td {
+  background: #f8fbfd !important;
+}
+
+/* Table wrapper if present */
+.overflow-x-auto {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: #ffffff !important;
+}
+
+/* Status badges / pills */
+[class*="rounded-full"] {
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+}
+
+/* Alert/status colors */
+[class*="text-red"],
+[class*="text-rose"] {
+  color: var(--danger) !important;
+}
+
+[class*="text-amber"],
+[class*="text-yellow"] {
+  color: var(--warning) !important;
+}
+
+[class*="text-green"],
+[class*="text-emerald"] {
+  color: var(--success) !important;
+}
+
+[class*="text-blue"] {
+  color: var(--primary) !important;
+}
+
+/* Modal overlay */
 .fixed {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(15, 23, 42, 0.52) !important;
 }
 
+/* Forms / dialogs */
 form,
 [role="dialog"] {
   background: #ffffff !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  border-radius: 0 !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
 }
 
-/* Mobile responsive */
+/* SVG icons */
+svg {
+  flex-shrink: 0;
+}
+
+/* Keep hidden elements hidden */
+.hidden {
+  display: none !important;
+}
+
+/* Mobile */
 @media (max-width: 900px) {
   header > div {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 14px !important;
-    align-items: center !important;
+    padding: 16px !important;
+    align-items: stretch !important;
   }
 
   header > div > div:first-child {
-    min-width: 90%;
+    width: 100% !important;
   }
 
   nav {
-    width: 90%;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
   }
 
-  button,
-  label {
-    width: 100%;
+  nav button,
+  nav label {
+    width: 100% !important;
+  }
+
+  main {
+    padding: 24px 16px 50px !important;
+  }
+
+  h1 {
+    font-size: 36px !important;
+  }
+
+  h2 {
     font-size: 24px !important;
   }
 
-  main input[placeholder*="Search"] {
-    width: 90% !important;
+  table {
+    font-size: 13px !important;
+  }
+
+  th,
+  td {
+    padding: 10px !important;
+  }
+}
+
+/* Small phones */
+@media (max-width: 540px) {
+  nav {
+    grid-template-columns: 1fr !important;
+  }
+
+  button,
+  label,
+  input,
+  select,
+  textarea {
+    width: 100% !important;
   }
 }
