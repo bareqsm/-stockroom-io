@@ -707,4 +707,101 @@ td button[class*="w-8"] {
   .fixed.inset-0 h2 {
     font-size: 22px !important;
   }
+  /* Dark mode fix */
+
+.bg-slate-950 {
+  background: #020617 !important;
+  color: #f8fafc !important;
+}
+
+.bg-slate-900,
+.bg-slate-900\/70 {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.text-slate-100 {
+  color: #f8fafc !important;
+}
+
+.text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.text-slate-500 {
+  color: #64748b !important;
+}
+
+.border-slate-800 {
+  border-color: #1e293b !important;
+}
+
+.bg-slate-950 header,
+.bg-slate-950 footer,
+.bg-slate-950 main,
+.bg-slate-950 section,
+.bg-slate-950 article,
+.bg-slate-950 table,
+.bg-slate-950 .bg-white {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+.bg-slate-950 th,
+.bg-slate-950 thead {
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+}
+
+.bg-slate-950 td {
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+.bg-slate-950 tbody tr:hover td {
+  background: #1e293b !important;
+}
+
+.bg-slate-950 input,
+.bg-slate-950 select,
+.bg-slate-950 textarea {
+  background: #020617 !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.bg-slate-950 input::placeholder,
+.bg-slate-950 textarea::placeholder {
+  color: #64748b !important;
+}
+
+.bg-slate-950 h1,
+.bg-slate-950 h2,
+.bg-slate-950 h3,
+.bg-slate-950 p,
+.bg-slate-950 div,
+.bg-slate-950 span {
+  color: inherit;
+}
+
+button.bg-yellow-400 {
+  background: #facc15 !important;
+  color: #020617 !important;
+  border-color: #facc15 !important;
+}
+
+button.bg-yellow-400:hover {
+  background: #fde047 !important;
+}
+
+button.bg-slate-900 {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+button.bg-slate-900:hover {
+  background: #1e293b !important;
+}
 }

@@ -486,11 +486,28 @@ export default function InventoryApp() {
             </button>
 
             <button
-              onClick={() => setDark((v) => !v)}
-              className={`${C.panel} border ${C.border} px-4 py-2 rounded-xl`}
-            >
-              {dark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+
+  type="button"
+
+  onClick={() => setDark((v) => !v)}
+
+  title={dark ? "Switch to light mode" : "Switch to dark mode"}
+
+  className={`flex items-center justify-center px-4 py-2 rounded-xl font-bold border transition ${
+
+    dark
+
+      ? "bg-yellow-400 text-slate-950 border-yellow-400 hover:bg-yellow-300"
+
+      : "bg-slate-900 text-white border-slate-900 hover:bg-slate-800"
+
+  }`}
+
+>
+
+  {dark ? <Sun size={18} /> : <Moon size={18} />}
+
+</button>
           </nav>
         </div>
       </header>
@@ -1559,7 +1576,7 @@ function ConfirmDialog({ product, onCancel, onConfirm, C }) {
 
           <button
             onClick={onConfirm}
-            className="px-5 py-3 rounded-xl bg-red-600 text-white font-extrabold hover:bg-red-700"
+            className="px-5 xpy-3 rounded-xl bg-red-600 text-white font-extrabold hover:bg-red-700"
           >
             Delete
           </button>
