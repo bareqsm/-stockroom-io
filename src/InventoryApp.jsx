@@ -432,11 +432,17 @@ export default function InventoryApp() {
             <div className="w-11 h-11 rounded-xl bg-blue-800 text-white flex items-center justify-center">
               <Boxes size={22} />
             </div>
+
             <div>
               <div className="text-2xl font-extrabold tracking-tight">
                 Stockroom <span className="text-blue-700">/ io</span>
               </div>
+
               <div className={`text-sm ${C.dim}`}>Inventory Manager</div>
+
+              <div className="text-xs font-semibold text-blue-700 mt-1">
+                This project was made by Bareq Mohaisen, a Computer Science graduate from Capella University.
+              </div>
             </div>
           </div>
 
